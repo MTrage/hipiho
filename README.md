@@ -17,11 +17,8 @@ Simply download the script and save it at the desired location °)
     rm hipiho
     chmod +x /usr/bin/hipiho
     exit
-    
 
-
-
-## Start / use
+### Start / use
 The script can of course be called with
 
     python3 hipiho
@@ -29,4 +26,16 @@ The script can of course be called with
 Or be made directly executable via
 
     hipiho 
+    
+## Help
+#### When you start hipiho for the first time, you will be asked for the PI-Hole IP, the port and whether you want the output to be slightly offset or a bit more colourful!
 
+If you make a mistake or the Pi-Hole does not respond to your request, you will be asked again if you want to enter the configuration data again.
+
+If you want to create a new configuration file for the query, you can do this with the option "-n".
+
+If you want to use Borders or IloveCandy, simply enter "yes" in the respective question during setup!
+
+
+
+#### Have fun with it !!!
