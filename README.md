@@ -1,6 +1,6 @@
 # HiPiHo
 HiPiHi is a simple Python script that allows you to query the state of the Pi-Hole from the terminal.
-
+![](https://github.com/MTrage/hipiho/blob/main/screenshots/main.png)
 ## Installation
 Simply download the script and save it at the desired location °)
 
@@ -36,6 +36,9 @@ If you want to create a new configuration file for the query, you can do this wi
 
 If you want to use Borders or IloveCandy, simply enter "yes" in the respective question during setup!
 
-
+![](https://github.com/MTrage/hipiho/blob/main/screenshots/ss01.png)
+![](https://github.com/MTrage/hipiho/blob/main/screenshots/ss02.png)
+![](https://github.com/MTrage/hipiho/blob/main/screenshots/ss03.png)
+![](https://github.com/MTrage/hipiho/blob/main/screenshots/ss04.png)
 
 #### Have fun with it !!!
