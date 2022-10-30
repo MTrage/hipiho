@@ -174,13 +174,13 @@ if run_level == 0:
     if pi_hole_border == "yes":
         print("")
     print(border_space + status)
-    print(border_space + border_space + bold("Network address:") + " ",pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port)
+    print(border_space + border_space + bold("Network address:") + "    ",pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port)
     if not pi_hole_ILoveCandy == "yes":
         print(border_space + border_space + jump_bar(percent_blocked))
-    print(border_space + border_space + bold("Domains blocked:") + "\t",'{0:,}'.format(domains_blocked).replace(',','.'))    
-    print(border_space + border_space + bold("Ads blocked today:") + "\t",ads_blocked_today)
-    print(border_space + border_space + bold("DNS queries today:") + "\t",dns_queries_today)
-    print(border_space + border_space + bold("Last updated:")+ "\t\t",gravity_last_updated_days,"day(s)",gravity_last_updated_hours,"hour(s)",gravity_last_updated_minutes,"minute(s)")
+    print(border_space + border_space + bold("Domains blocked:") + "    ",'{0:,}'.format(domains_blocked).replace(',','.'))    
+    print(border_space + border_space + bold("Ads blocked today:") + "  ",ads_blocked_today)
+    print(border_space + border_space + bold("DNS queries today:") + "  ",dns_queries_today)
+    print(border_space + border_space + bold("Last updated:") + "       ",gravity_last_updated_days,"day(s)",gravity_last_updated_hours,"hour(s)",gravity_last_updated_minutes,"minute(s)")
     if pi_hole_ILoveCandy == "yes":
         print(border_space + "\033[44m {}\033[00m" .format("\b " + border_space_bottom + percent_blocked_str + "% "),"\033[43m {}\033[00m" .format("\b\b" + percent_bar_a),"\b\033[42m {}\033[00m" .format("" + percent_bar_b))
     if pi_hole_border == "yes":
