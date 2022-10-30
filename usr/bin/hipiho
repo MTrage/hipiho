@@ -1,0 +1,191 @@
+#!/usr/bin/python3
+
+# This is free and unencumbered software released into the public domain.
+
+#   Anyone is free to copy, modify, publish, use, compile, sell, or distribute this software, either in source code form or as a compiled binary, for any purpose, commercial or non-commercial, and by any means.
+#   In jurisdictions that recognize copyright laws, the author or authors of this software dedicate any and all copyright interest in the software to the public domain. We make this dedication for the benefit of the public at large and to the detriment of our heirs and successors. We intend this dedication to be an overt act of relinquishment in perpetuity of all present and future rights to this software under copyright law.
+#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#   For more information, please refer to <http://unlicense.org>
+
+# have fun with this one,
+# Marc-André Tragé (github.com/MTrage/hipiho)
+
+import os, sys, requests
+from pathlib import Path
+
+run_level   = 0
+home_path   = str(Path.home())
+config_path = "/.config/hipiho/"
+config_file = "default.config"
+config      = home_path + config_path + config_file
+version     = "HiPiHo Version 0.7.21"
+
+def bold(text):
+    return "\033[1m {}\033[00m" .format("\b" + text)
+
+def help_info():
+    print("\n" + bold("HiPiHo") + " – a simple Pi-Hole CLI-Tool\n")
+    print("  Usage: hipiho [" + bold("OPTION]"))
+    print("    " + bold("-h\t--help\t\thelp\t-H\t") + "show this help message")
+    print("    " + bold("-v\t--version\tversion\t-V\t") + "show program's version number")
+    print("    " + bold("-n\t--new\t\tnew\t-N\t") + "create a new config file\n")
+    print("For more information, visit github.com/MTrage/hipiho\n")
+    sys.exit()
+
+def check_config(path):
+    if os.path.exists(path):
+        run_level = 1   
+    else:
+        os.mkdir(path)
+        config = path + config_file
+        file = open(config, "w")
+        print("Please enter Pi-Hole WEB-Config Data...")
+        pih_ip   = input("... HTTP IP: ")
+        if pih_ip == "":
+            pih_ip = "pi.hole"
+        pih_port = input("... HTTP Port: ")
+        if pih_port == "":
+            pih_port = "80"
+        pih_borders = input("... Borders: ") 
+        if pih_borders == "":
+            pih_borders = "no"
+        pih_ILoveCandy = input("... ILoveCandy: ")
+        if pih_ILoveCandy == "":
+            pih_ILoveCandy = "no"         
+        file.write("# HiPiHo Config File \n")
+        file.write("IP=" + pih_ip + "\n")
+        file.write("PORT=" + pih_port + "\n")
+        file.write("BORDERS=" + pih_borders + "\n")
+        file.write("ILOVECANDY=" + pih_ILoveCandy + "\n")
+        file.close()
+        sys.exit()
+
+check_config(home_path + config_path)
+
+def check_args():
+    if len(sys.argv) == 1:
+        run_level = 3
+    elif len(sys.argv) == 2 and sys.argv[1] != "":
+        if sys.argv[1] == "-h" or sys.argv[1] == "--help" or sys.argv[1] == "help" or sys.argv[1] == "-H":
+            help_info()
+        if sys.argv[1] == "-v" or sys.argv[1] == "--version" or sys.argv[1] == "version" or sys.argv[1] == "-V":
+            print(version)
+            sys.exit()
+        elif sys.argv[1] == "-n" or sys.argv[1] == "--new" or sys.argv[1] == "new" or sys.argv[1] == "-N":
+            print("Deleting old config...")
+            os.remove(config)
+            os.rmdir(home_path + config_path)
+            check_config(home_path + config_path)
+        else:
+            help_info()
+
+config_file_exist = os.path.exists(config)
+if not config_file_exist:
+    os.remove(config)
+    os.rmdir(home_path + config_path)
+    check_config(home_path + config_path)
+
+check_args()
+
+file = open(config, "r")
+lines = file.readlines()
+pi_hole_ip         = lines[1].split("=")[1].rstrip()
+pi_hole_port       = lines[2].split("=")[1].rstrip()
+pi_hole_border     = lines[3].split("=")[1].rstrip()
+pi_hole_ILoveCandy = lines[4].split("=")[1].rstrip()
+file.close()
+
+pi_hole_ip_beg  = 'http://'
+pi_hole_ip_end  = '/admin/api.php'
+pi_hole         = pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port + pi_hole_ip_end
+
+def check_pihole():
+    try:
+        response = requests.get(pi_hole)
+        if response.status_code == 200:
+            run_level = 2
+        else:
+            print("Pi-Hole is not reachable")
+            exit()
+    except:
+        print("Pi-Hole is not reachable")
+        print("Do you want to create a new config?")
+        print("1) Yes")
+        print("2) No")
+        choice = input("Your choice: ")
+        if choice == "1":
+            os.remove(config)
+            os.rmdir(home_path + config_path)
+            check_config(home_path + config_path)
+        else:
+            exit()
+        exit()
+
+check_pihole()
+
+pi_hole_status               = requests.get(pi_hole + '?summaryRaw').json()
+status                       = pi_hole_status['status']
+domains_blocked              = pi_hole_status['domains_being_blocked']
+dns_queries_today            = pi_hole_status['dns_queries_today']
+gravity_last_updated_days    = pi_hole_status['gravity_last_updated']['relative']['days'] 
+gravity_last_updated_hours   = pi_hole_status['gravity_last_updated']['relative']['hours']
+gravity_last_updated_minutes = pi_hole_status['gravity_last_updated']['relative']['minutes']
+
+space                     = ' '
+border_space              = ''
+border_space_top_enabled  = ''
+border_space_top_disabled = '' 
+border_space_bottom       = ''
+
+if pi_hole_border == "yes":
+        border_space = '    '
+
+if pi_hole_border == "yes":
+        border_space_bottom = '>>> '
+else:
+        border_space_bottom = ''
+
+if pi_hole_border == "yes":
+        border_space_top_enabled  = '\033[44m–-––\033'
+        border_space_top_disabled = '\033[41m–-––\033'
+else:
+    border_space_top_enabled  = '\033[44m\033'
+    border_space_top_disabled = '\033[41m\033'
+
+if status == 'enabled':
+    status = "\033[44m" + bold(" Pi-Hole ") + border_space_top_enabled  + '––––––––––––––––––––––––––– Status: [ ENABLED ] \033[00m'
+elif status == 'disabled':
+    status = "\033[41m" + bold(" Pi-Hole ") + border_space_top_disabled + '–––––––––––––––––––––––––– Status: [ DISABLED ] \033[00m'
+
+def percent(num, total):
+    return (num / total) * 100
+
+ads_blocked_today     = pi_hole_status['ads_blocked_today']
+percent_blocked       = pi_hole_status['ads_percentage_today']
+percent_blocked_round = round(percent_blocked/2)
+percent_bar_a         = percent_blocked_round*space
+percent_bar_b         = (50 - percent_blocked_round)*space
+percent_blocked_str   = str(int(percent_blocked))
+
+def jump_bar(percent):
+    return bold("Percent blocked:\t ") + "[%-25s] %d%%" % ('#'*int(percent/4), percent)
+
+if run_level == 0:
+    if pi_hole_border == "yes":
+        print("")
+    print(border_space + status)
+    print(border_space + border_space + bold("Network address:") + " ",pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port)
+    if not pi_hole_ILoveCandy == "yes":
+        print(border_space + border_space + jump_bar(percent_blocked))
+    print(border_space + border_space + bold("Domains blocked:") + "\t",'{0:,}'.format(domains_blocked).replace(',','.'))    
+    print(border_space + border_space + bold("Ads blocked today:") + "\t",ads_blocked_today)
+    print(border_space + border_space + bold("DNS queries today:") + "\t",dns_queries_today)
+    print(border_space + border_space + bold("Last updated:")+ "\t\t",gravity_last_updated_days,"day(s)",gravity_last_updated_hours,"hour(s)",gravity_last_updated_minutes,"minute(s)")
+    if pi_hole_ILoveCandy == "yes":
+        print(border_space + "\033[44m {}\033[00m" .format("\b " + border_space_bottom + percent_blocked_str + "% "),"\033[43m {}\033[00m" .format("\b\b" + percent_bar_a),"\b\033[42m {}\033[00m" .format("" + percent_bar_b))
+    if pi_hole_border == "yes":
+        print("")
+    int(percent_blocked)
+    sys.exit()
+else:
+    check_pihole()
