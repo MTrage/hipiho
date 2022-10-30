@@ -36,9 +36,13 @@ If you want to create a new configuration file for the query, you can do this wi
 
 If you want to use Borders or IloveCandy, simply enter "yes" in the respective question during setup!
 
+# Borders=no & IloveCandy=no
 ![](https://github.com/MTrage/hipiho/blob/main/screenshots/ss01.png)
+# Borders=no & IloveCandy=yes
 ![](https://github.com/MTrage/hipiho/blob/main/screenshots/ss02.png)
+# Borders=yes & IloveCandy=no
 ![](https://github.com/MTrage/hipiho/blob/main/screenshots/ss03.png)
+# Borders=yes & IloveCandy=yes
 ![](https://github.com/MTrage/hipiho/blob/main/screenshots/ss04.png)
 
 #### Have fun with it !!!
