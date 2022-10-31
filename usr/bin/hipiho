@@ -13,11 +13,9 @@
 import os, sys, requests
 from pathlib import Path
 
-version          = "HiPiHo Version 0.8"
-
+version          = "0.8"
 config_path      = "/.config/hipiho/"
 config_file      = "default.config"
-
 pi_hole_ip_beg   = "http://"
 pi_hole_ip_end   = "/admin/api.php"
 pi_hole_auth     = "?auth="
@@ -130,7 +128,7 @@ def check_args():
         if sys.argv[1] == "-h" or sys.argv[1] == "--help" or sys.argv[1] == "help" or sys.argv[1] == "-H":
             help_info()
         if sys.argv[1] == "-v" or sys.argv[1] == "--version" or sys.argv[1] == "version" or sys.argv[1] == "-V":
-            print(version)
+            print("HiPiHo Version " + version)
             exit()
         elif sys.argv[1] == "-n" or sys.argv[1] == "--new" or sys.argv[1] == "new" or sys.argv[1] == "-N":
             print("Deleting old config...")
