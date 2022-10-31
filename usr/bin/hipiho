@@ -14,16 +14,21 @@ import os, sys, requests
 from pathlib import Path
 
 version          = "0.8"
-config_path      = "/.config/hipiho/"
-config_file      = "default.config"
-pi_hole_ip_beg   = "http://"
-pi_hole_ip_end   = "/admin/api.php"
-pi_hole_auth     = "?auth="
 
-home_path        = str(Path.home())
-config           = home_path + config_path + config_file
+config_path      = "/.config/hipiho/"   # configuration storage folder in the home folder
+config_file      = "default.config"     # name of the configuration file
+pi_hole_ip_beg   = "http://"            # should only be changed to "https://"" if this has also been installed in the pi-hole
+pi_hole_ip_end   = "/admin/api.php"     # standard php to api
+pi_hole_auth     = "?auth="             # authentification appendix for the API Raw Token
+
+
+#  Script parts have been named in such a way that they should be self-explanatory on closer inspection due to their names. 
+#  If you still have questions, just ask °)
+
 
 run_level        = 0
+home_path        = str(Path.home())
+config           = home_path + config_path + config_file
 
 def bold(text):
     return "\033[1m {}\033[00m" .format("\b" + text)
@@ -48,26 +53,37 @@ def check_config(path):
         config = path + config_file
         file = open(config, "w")
         print("Please enter Pi-Hole WEB-Config Data...")
-        pih_ip   = input("... HTTP IP: ")
-        if pih_ip == "":
-            pih_ip = "pi.hole"
+        
+        pih_ip = input("... HTTP IP: ")
+
+        if pih_ip            == "":
+            pih_ip            = "pi.hole"
+
         pih_port = input("... HTTP Port: ")
-        if pih_port == "":
-            pih_port = "80"
-        pih_borders = input("... Borders: ") 
-        if pih_borders == "":
-            pih_borders = "no"
-        pih_ILoveCandy = input("... ILoveCandy: ")
-        if pih_ILoveCandy == "":
-            pih_ILoveCandy = "no"
-        pih_Raw_API_Token = input("... Raw API Token: ")
+
+        if pih_port          == "":
+            pih_port          = "80"
+
+        pih_borders           = input("... Borders: ") 
+
+        if pih_borders       == "":
+            pih_borders       = "no"
+
+        pih_ILoveCandy        = input("... ILoveCandy: ")
+
+        if pih_ILoveCandy    == "":
+            pih_ILoveCandy    = "no"
+
+        pih_Raw_API_Token     = input("... Raw API Token: ")
+
         if pih_Raw_API_Token == "":
             pih_Raw_API_Token = ""
+
         file.write("# HiPiHo Config File \n")
-        file.write("IP=" + pih_ip + "\n")
-        file.write("PORT=" + pih_port + "\n")
-        file.write("BORDERS=" + pih_borders + "\n")
-        file.write("ILOVECANDY=" + pih_ILoveCandy + "\n")
+        file.write("IP="            + pih_ip            + "\n")
+        file.write("PORT="          + pih_port          + "\n")
+        file.write("BORDERS="       + pih_borders       + "\n")
+        file.write("ILOVECANDY="    + pih_ILoveCandy    + "\n")
         file.write("RAW_API_TOKEN=" + pih_Raw_API_Token + "\n")
         file.close()
         exit()
@@ -243,13 +259,17 @@ def jump_bar(percent):
 if run_level == 0:
     if pi_hole_border == "yes":
         print("")
+
     print(border_space + status)
     print(border_space + border_space + bold("Network address:\t") + "",pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port)
+
     if not pi_hole_ILoveCandy == "yes":
         print(border_space + border_space + jump_bar(percent_blocked))
+
     print(border_space + border_space + bold("Domains blocked:\t")   + "",'{0:,}'.format(domains_blocked).replace(',','.'))    
     print(border_space + border_space + bold("Ads blocked today:\t") + "",ads_blocked_today)
     print(border_space + border_space + bold("DNS queries today:\t") + "",dns_queries_today)
+
     if len(sys.argv) == 2 and sys.argv[1] != "":
         if sys.argv[1] == "-a" or sys.argv[1] == "--all" or sys.argv[1] == "all" or sys.argv[1] == "-A":
             print(border_space + bold("––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––"))
@@ -266,6 +286,7 @@ if run_level == 0:
             print(border_space + border_space + bold("Reply CNAME: \t\t ")         + str(reply_CNAME)             + bold("\tPrivacy level: \t ")       + str(privacy_level))
             print(border_space + bold("––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––"))
     print(border_space + border_space + bold("Last updated:") + "\t\t",gravity_last_updated_days,"day/s",gravity_last_updated_hours,"hour/s",gravity_last_updated_minutes,"minute/s")
+
     if pi_hole_ILoveCandy == "yes":
         print(border_space + "\033[44m {}\033[00m" .format("\b " + border_space_bottom + percent_blocked_str + "% "),"\033[43m {}\033[00m" .format("\b\b" + percent_bar_a),"\b\033[42m {}\033[00m" .format("" + percent_bar_b))
     
@@ -275,4 +296,5 @@ if run_level == 0:
     int(percent_blocked)
     exit()
 else:
+
     check_pihole()
