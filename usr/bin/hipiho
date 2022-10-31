@@ -18,7 +18,7 @@ home_path   = str(Path.home())
 config_path = "/.config/hipiho/"
 config_file = "default.config"
 config      = home_path + config_path + config_file
-version     = "HiPiHo Version 0.7.21"
+version     = "HiPiHo Version 0.7.5"
 
 def bold(text):
     return "\033[1m {}\033[00m" .format("\b" + text)
@@ -30,7 +30,7 @@ def help_info():
     print("    " + bold("-v\t--version\tversion\t-V\t") + "show program's version number")
     print("    " + bold("-n\t--new\t\tnew\t-N\t") + "create a new config file\n")
     print("For more information, visit github.com/MTrage/hipiho\n")
-    sys.exit()
+    exit()
 
 def check_config(path):
     if os.path.exists(path):
@@ -51,26 +51,81 @@ def check_config(path):
             pih_borders = "no"
         pih_ILoveCandy = input("... ILoveCandy: ")
         if pih_ILoveCandy == "":
-            pih_ILoveCandy = "no"         
+            pih_ILoveCandy = "no"
+        pih_Raw_API_Token = input("... Raw API Token: ")
+        if pih_Raw_API_Token == "":
+            pih_Raw_API_Token = ""
         file.write("# HiPiHo Config File \n")
         file.write("IP=" + pih_ip + "\n")
         file.write("PORT=" + pih_port + "\n")
         file.write("BORDERS=" + pih_borders + "\n")
         file.write("ILOVECANDY=" + pih_ILoveCandy + "\n")
+        file.write("RAW_API_TOKEN=" + pih_Raw_API_Token + "\n")
         file.close()
-        sys.exit()
+        exit()
 
 check_config(home_path + config_path)
+
+
+file = open(config, "r")
+lines = file.readlines()
+pi_hole_ip            = lines[1].split("=")[1].rstrip()
+pi_hole_port          = lines[2].split("=")[1].rstrip()
+pi_hole_border        = lines[3].split("=")[1].rstrip()
+pi_hole_ILoveCandy    = lines[4].split("=")[1].rstrip()
+pi_hole_Raw_API_Token = lines[5].split("=")[1].rstrip()
+file.close()
+
+
+pi_hole_ip_beg   = 'http://'
+pi_hole_ip_end   = '/admin/api.php'
+pi_hole_API_auth = "?auth=" + pi_hole_Raw_API_Token
+pi_hole          = pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port + pi_hole_ip_end
+
+def turn_pih(state):
+    if pi_hole_Raw_API_Token == "":
+        print("\n"+ bold("  !!! HiPiHo API ERROR !!!"))
+        print("\n  To switch the Pi-Hole blocking on or off via HiPiHo, you must enter the Raw API Token! !!!\n")
+        print("  You can get your \"Raw API Token\" by logging into the Pi-Hole, going to the menu item \"Settings\",")
+        print("  then to the sub-item \"API / Web interface\" and selecting the button \"Show API Token\".\n")        
+        print("  To enter a raw API token please call \n  Usage: " + bold("hipiho -n") + "\n  reconfigure the HiPiHo.\n")
+        exit()
+    else:        
+        if state == "ON":
+            r = requests.get(pi_hole + pi_hole_API_auth + "&enable")
+            if r.status_code == 200:
+                print("Pi-Hole blocking is now [ " + bold("ENABLED") + " ]")
+                exit()
+            else:
+                print("Something went wrong, check your config file!")
+        if state == "OFF":
+            r = requests.get(pi_hole + pi_hole_API_auth + "&disable")
+            if r.status_code == 200:
+                print("Pi-Hole is now [ " + bold("DISABLED") + " ]")
+                exit()
+            else:
+                print("Something went wrong, check your config file!")
+            if r.status_code == 200:
+                print("Pi-Hole is now " + bold("OFF") + "!")
+                exit()
+            else:
+                print("Something went wrong, check your config file!")
+                exit()
+    exit()
 
 def check_args():
     if len(sys.argv) == 1:
         run_level = 3
     elif len(sys.argv) == 2 and sys.argv[1] != "":
+        if sys.argv[1] == "on" or sys.argv[1] == "enable" or sys.argv[1] == "true" or sys.argv[1] == "ON":
+            turn_pih("ON")
+        if sys.argv[1] == "off" or sys.argv[1] == "disable" or sys.argv[1] == "false" or sys.argv[1] == "OFF":
+            turn_pih("OFF")
         if sys.argv[1] == "-h" or sys.argv[1] == "--help" or sys.argv[1] == "help" or sys.argv[1] == "-H":
             help_info()
         if sys.argv[1] == "-v" or sys.argv[1] == "--version" or sys.argv[1] == "version" or sys.argv[1] == "-V":
             print(version)
-            sys.exit()
+            exit()
         elif sys.argv[1] == "-n" or sys.argv[1] == "--new" or sys.argv[1] == "new" or sys.argv[1] == "-N":
             print("Deleting old config...")
             os.remove(config)
@@ -86,18 +141,6 @@ if not config_file_exist:
     check_config(home_path + config_path)
 
 check_args()
-
-file = open(config, "r")
-lines = file.readlines()
-pi_hole_ip         = lines[1].split("=")[1].rstrip()
-pi_hole_port       = lines[2].split("=")[1].rstrip()
-pi_hole_border     = lines[3].split("=")[1].rstrip()
-pi_hole_ILoveCandy = lines[4].split("=")[1].rstrip()
-file.close()
-
-pi_hole_ip_beg  = 'http://'
-pi_hole_ip_end  = '/admin/api.php'
-pi_hole         = pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port + pi_hole_ip_end
 
 def check_pihole():
     try:
@@ -186,6 +229,6 @@ if run_level == 0:
     if pi_hole_border == "yes":
         print("")
     int(percent_blocked)
-    sys.exit()
+    exit()
 else:
     check_pihole()
