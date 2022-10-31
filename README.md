@@ -1,10 +1,12 @@
 ![Tested](https://img.shields.io/badge/Tested%20on-Arch%20Linux%20/%20Manjaro%20/%20Artix%20/%20Ubuntu%20-red) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/3) [![GitHub License](https://img.shields.io/github/license/MTrage/hipiho)](https://github.com/MTrage/hipiho/blob/main/LICENSE)
 
 # HiPiHo
-### HiPiHi is a simple Python script that allows you to query the state of the Pi-Hole from the terminal – with the possibility to switch the Pi-Hole blocking on or off via the terminal.
+HiPiHi is a simple Python script that allows you to query the state of the Pi-Hole from the terminal – with the possibility to switch the Pi-Hole blocking on or off via the terminal.
 
-
+### Shortened output
 ![](https://github.com/MTrage/hipiho/blob/main/screenshots/main.png)
+### Complete output
+![](https://github.com/MTrage/hipiho/blob/main/screenshots/main-all.png)
 
 ## Installation
 Simply download the script and save it at the desired location °)
