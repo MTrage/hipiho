@@ -10,11 +10,10 @@
 # have fun with this one,
 # Marc-André Tragé (github.com/MTrage/hipiho)
 
-#from genericpath import exists, isfile
 import os, sys, requests, webbrowser
 from pathlib import Path
 
-version          = "0.9.7"
+version          = "1.0.0"
 
 config_path      = "/.config/hipiho/"   # configuration storage folder in the home folder
 config_file      = "default.config"     # name of the configuration file
@@ -346,46 +345,49 @@ percent_blocked_str   = str(int(percent_blocked))
 def jump_bar(percent):
     return bold("Percent blocked:\t ") + "[%-25s] %d%%" % ('#'*int(percent/4), percent)
 
-if run_level == 0:
-    if pi_hole_border == "yes":
-        print("")
-        space_line_border = '––––'
+def main():
+    if run_level == 0:
+        if pi_hole_border == "yes":
+            print("")
+            space_line_border = '––––'
 
-    print(border_space + status)
-    print(border_space + border_space + bold("Network address:\t") + "",pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port)
+        print(border_space + status)
+        print(border_space + border_space + bold("Network address:\t") + "",pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port)
 
-    if not pi_hole_ILoveCandy == "yes":
-        print(border_space + border_space + jump_bar(percent_blocked))
+        if not pi_hole_ILoveCandy == "yes":
+            print(border_space + border_space + jump_bar(percent_blocked))
 
-    print(border_space + border_space + bold("Domains blocked:\t")   + "",'{0:,}'.format(domains_blocked).replace(',','.'))    
-    print(border_space + border_space + bold("Ads blocked today:\t") + "",ads_blocked_today)
-    print(border_space + border_space + bold("DNS queries today:\t") + "",dns_queries_today)
+        print(border_space + border_space + bold("Domains blocked:\t")   + "",'{0:,}'.format(domains_blocked).replace(',','.'))    
+        print(border_space + border_space + bold("Ads blocked today:\t") + "",ads_blocked_today)
+        print(border_space + border_space + bold("DNS queries today:\t") + "",dns_queries_today)
 
-    if len(sys.argv) == 2 and sys.argv[1] != "":
-        if sys.argv[1] == "-a" or sys.argv[1] == "--all" or sys.argv[1] == "all" or sys.argv[1] == "-A":
-            print(border_space + bold(space_line_border + "––––––––––––––––––––––––––––––––––––––––––––––––––––––––"))
-            print(border_space + border_space + bold("Unique Domains: \t ")        + str(unique_domains)          + bold("\tReply IP: \t ")            + str(reply_IP))
-            print(border_space + border_space + bold("Queries forwarded: \t ")     + str(queries_forwarded)       + bold("\tReply DOMAIN: \t ")        + str(reply_DOMAIN))
-            print(border_space + border_space + bold("Queries cached: \t ")        + str(queries_cached)          + bold("\tReply SERVFAIL:  ")        + str(reply_SERVFAIL))
-            print(border_space + border_space + bold("Clients ever seen: \t ")     + str(clients_ever_seen)       + bold("\tReply RRNAME: \t ")        + str(reply_RRNAME))
-            print(border_space + border_space + bold("Unique clients: \t ")        + str(unique_clients)          + bold("\tReply REFUSED: \t ")       + str(reply_REFUSED))
-            print(border_space + border_space + bold("DNS queries all types: \t ") + str(dns_queries_all_types)   + bold("\tReply NOTIMP: \t ")        + str(reply_NOTIMP))
-            print(border_space + border_space + bold("DNS queries all replies: ")  + str(dns_queries_all_replies) + bold("\tReply OTHER: \t ")         + str(reply_OTHER))
-            print(border_space + border_space + bold("Reply UNKNOWN: \t\t ")       + str(reply_UNKNOWN)           + bold("\tReply DNSSEC: \t ")        + str(reply_DNSSEC))
-            print(border_space + border_space + bold("Reply NODATA: \t\t ")        + str(reply_NODATA)            + bold("\tReply NONE: \t ")          + str(reply_NONE))
-            print(border_space + border_space + bold("Reply NXDOMAIN: \t ")        + str(reply_NXDOMAIN)          + bold("\tReply BLOB: \t ")          + str(reply_BLOB))
-            print(border_space + border_space + bold("Reply CNAME: \t\t ")         + str(reply_CNAME)             + bold("\tPrivacy level: \t ")       + str(privacy_level))
-            print(border_space + bold(space_line_border + "––––––––––––––––––––––––––––––––––––––––––––––––––––––––"))
-    print(border_space + border_space + bold("Last updated:") + "\t\t",gravity_last_updated_days,"day/s",gravity_last_updated_hours,"hour/s",gravity_last_updated_minutes,"minute/s")
+        if len(sys.argv) == 2 and sys.argv[1] != "":
+            if sys.argv[1] == "-a" or sys.argv[1] == "--all" or sys.argv[1] == "all" or sys.argv[1] == "-A":
+                print(border_space + bold(space_line_border + "––––––––––––––––––––––––––––––––––––––––––––––––––––––––"))
+                print(border_space + border_space + bold("Unique Domains: \t ")        + str(unique_domains)          + bold("\tReply IP: \t ")            + str(reply_IP))
+                print(border_space + border_space + bold("Queries forwarded: \t ")     + str(queries_forwarded)       + bold("\tReply DOMAIN: \t ")        + str(reply_DOMAIN))
+                print(border_space + border_space + bold("Queries cached: \t ")        + str(queries_cached)          + bold("\tReply SERVFAIL:  ")        + str(reply_SERVFAIL))
+                print(border_space + border_space + bold("Clients ever seen: \t ")     + str(clients_ever_seen)       + bold("\tReply RRNAME: \t ")        + str(reply_RRNAME))
+                print(border_space + border_space + bold("Unique clients: \t ")        + str(unique_clients)          + bold("\tReply REFUSED: \t ")       + str(reply_REFUSED))
+                print(border_space + border_space + bold("DNS queries all types: \t ") + str(dns_queries_all_types)   + bold("\tReply NOTIMP: \t ")        + str(reply_NOTIMP))
+                print(border_space + border_space + bold("DNS queries all replies: ")  + str(dns_queries_all_replies) + bold("\tReply OTHER: \t ")         + str(reply_OTHER))
+                print(border_space + border_space + bold("Reply UNKNOWN: \t\t ")       + str(reply_UNKNOWN)           + bold("\tReply DNSSEC: \t ")        + str(reply_DNSSEC))
+                print(border_space + border_space + bold("Reply NODATA: \t\t ")        + str(reply_NODATA)            + bold("\tReply NONE: \t ")          + str(reply_NONE))
+                print(border_space + border_space + bold("Reply NXDOMAIN: \t ")        + str(reply_NXDOMAIN)          + bold("\tReply BLOB: \t ")          + str(reply_BLOB))
+                print(border_space + border_space + bold("Reply CNAME: \t\t ")         + str(reply_CNAME)             + bold("\tPrivacy level: \t ")       + str(privacy_level))
+                print(border_space + bold(space_line_border + "––––––––––––––––––––––––––––––––––––––––––––––––––––––––"))
+        print(border_space + border_space + bold("Last updated:") + "\t\t",gravity_last_updated_days,"day/s",gravity_last_updated_hours,"hour/s",gravity_last_updated_minutes,"minute/s")
 
-    if pi_hole_ILoveCandy == "yes":
-        print(border_space + "\033[44m {}\033[00m" .format("\b " + border_space_bottom + percent_blocked_str + "% "),"\033[43m {}\033[00m" .format("\b\b" + percent_bar_a),"\b\033[42m {}\033[00m" .format("" + percent_bar_b))
-    
-    if pi_hole_border == "yes":
-        print("")
-            
-    int(percent_blocked)
-    exit()
-else:
+        if pi_hole_ILoveCandy == "yes":
+            print(border_space + "\033[44m {}\033[00m" .format("\b " + border_space_bottom + percent_blocked_str + "% "),"\033[43m {}\033[00m" .format("\b\b" + percent_bar_a),"\b\033[42m {}\033[00m" .format("" + percent_bar_b))
+        
+        if pi_hole_border == "yes":
+            print("")
 
-    check_pihole()
+        int(percent_blocked)
+        exit()
+    else:
+        check_pihole()
+
+if __name__ == '__main__':
+    main()
