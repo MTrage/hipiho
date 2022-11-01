@@ -10,10 +10,11 @@
 # have fun with this one,
 # Marc-André Tragé (github.com/MTrage/hipiho)
 
-import os, sys, requests
+#from genericpath import exists, isfile
+import os, sys, requests, webbrowser
 from pathlib import Path
 
-version          = "0.8"
+version          = "0.9.7"
 
 config_path      = "/.config/hipiho/"   # configuration storage folder in the home folder
 config_file      = "default.config"     # name of the configuration file
@@ -21,17 +22,54 @@ pi_hole_ip_beg   = "http://"            # should only be changed to "https://"" 
 pi_hole_ip_end   = "/admin/api.php"     # standard php to api
 pi_hole_auth     = "?auth="             # authentification appendix for the API Raw Token
 
+reconfig_pi_hole_ip            = ""
+reconfig_pi_hole_port          = ""
+reconfig_pi_hole_border        = ""
+reconfig_pi_hole_ILoveCandy    = ""
+reconfig_pi_hole_Raw_API_Token = ""
 
 #  Script parts have been named in such a way that they should be self-explanatory on closer inspection due to their names. 
 #  If you still have questions, just ask °)
 
+run_level = 0
+home_path = str(Path.home())
+config    = home_path + config_path + config_file
 
-run_level        = 0
-home_path        = str(Path.home())
-config           = home_path + config_path + config_file
+def check_if_exist_config_file():
+    if not os.path.exists(config):
+        print("Config file not found!")
+        if os.path.exists(home_path + config_path):
+            os.rmdir(home_path + config_path)
+
+    if os.path.exists(home_path + config_path):
+        if os.path.isfile(config):
+            if os.stat(config).st_size == 0:
+                os.remove(config)
+                os.rmdir(home_path + config_path)
+                print("Config file is empty. Please reconfigure!")
+
+check_if_exist_config_file()
 
 def bold(text):
     return "\033[1m {}\033[00m" .format("\b" + text)
+
+def ask_yes_or_no(question, default="yes"):
+    valid = {"yes":True, "y":True, "no":False, "n":False}
+    if default == None:
+        prompt = " [y/n] "
+    elif default == "yes":
+        prompt = " [Y/n] "
+    elif default == "no":
+        prompt = " [y/N] "
+    else:
+        raise ValueError("invalid default answer: '%s'" % default)
+    while True:
+        sys.stdout.write(question + prompt)
+        choice = input().lower()
+        if default is not None and choice == '':
+            return valid[default]
+        elif choice in valid:
+            return valid[choice]
 
 def help_info():
     print("\n" + bold("HiPiHo") + " – a simple Pi-Hole CLI-Tool\n")
@@ -54,30 +92,77 @@ def check_config(path):
         file = open(config, "w")
         print("Please enter Pi-Hole WEB-Config Data...")
         
-        pih_ip = input("... HTTP IP: ")
+        if reconfig_pi_hole_ip  == "":
+            pih_ip = "pi.hole"
+        if reconfig_pi_hole_ip != "":
+            pih_ip = reconfig_pi_hole_ip
+        if reconfig_pi_hole_port != "":
+            if(ask_yes_or_no("Is this the right IP/HOST: " + bold(reconfig_pi_hole_ip) + " ?", "yes") == True):
+                pih_ip = reconfig_pi_hole_ip
+            else:
+                pih_ip = input(bold("... HTTP IP: "))
+        else:
+            pih_ip = input(bold("... HTTP IP: "))
 
-        if pih_ip            == "":
-            pih_ip            = "pi.hole"
+        if reconfig_pi_hole_port  == "":
+            pih_port = "80"
+        if reconfig_pi_hole_port != "":
+            pih_port = reconfig_pi_hole_port
+        if reconfig_pi_hole_port != "":
+            if(ask_yes_or_no("Is this the right Port: " + bold(reconfig_pi_hole_port) + " ?", "yes") == True):
+                pih_port = reconfig_pi_hole_port
+            else:
+                pih_port = input(bold("... HTTP Port: "))
+        else:
+            pih_port = input(bold("... HTTP Port: "))
 
-        pih_port = input("... HTTP Port: ")
+        if reconfig_pi_hole_border  == "":
+            pih_borders = ""
+        if reconfig_pi_hole_border != "":
+            pih_borders = reconfig_pi_hole_border
+        if reconfig_pi_hole_border != "":
+            if(ask_yes_or_no("Is show Borders " + bold(reconfig_pi_hole_border) + " the right choice?", "yes") == True):
+                pih_borders = reconfig_pi_hole_border
+            else:
+                if(ask_yes_or_no(bold("... Borders: "), "yes") == True):
+                    pih_borders = "yes"
+                else:
+                    pih_borders = "no"
+        else:
+            if(ask_yes_or_no(bold("... Borders: "), "yes") == True):
+                pih_borders = "yes"
+            else:
+                pih_borders = "no"
 
-        if pih_port          == "":
-            pih_port          = "80"
+        if reconfig_pi_hole_ILoveCandy  == "":
+            pih_ILoveCandy = "no"
+        if reconfig_pi_hole_ILoveCandy != "":
+            pih_ILoveCandy = reconfig_pi_hole_ILoveCandy
+        if reconfig_pi_hole_ILoveCandy != "":
+            if(ask_yes_or_no("Is show Candy " + bold(reconfig_pi_hole_ILoveCandy) + " the right choice?", "yes") == True):
+                pih_ILoveCandy = reconfig_pi_hole_ILoveCandy
+            else:
+                if(ask_yes_or_no(bold("... ILoveCandy: "), "yes") == True):
+                    pih_ILoveCandy = "yes"
+                else:
+                    pih_ILoveCandy = "no"
+        else:
+            if(ask_yes_or_no(bold("... ILoveCandy: "), "yes") == True):
+                pih_ILoveCandy = "yes"
+            else:
+                pih_ILoveCandy = "no"
 
-        pih_borders           = input("... Borders: ") 
-
-        if pih_borders       == "":
-            pih_borders       = "no"
-
-        pih_ILoveCandy        = input("... ILoveCandy: ")
-
-        if pih_ILoveCandy    == "":
-            pih_ILoveCandy    = "no"
-
-        pih_Raw_API_Token     = input("... Raw API Token: ")
-
-        if pih_Raw_API_Token == "":
-            pih_Raw_API_Token = ""
+        if reconfig_pi_hole_Raw_API_Token  == "":
+            pih_Raw_API_Token = "" 
+        if reconfig_pi_hole_Raw_API_Token != "":
+            pih_Raw_API_Token = reconfig_pi_hole_Raw_API_Token
+        if reconfig_pi_hole_Raw_API_Token != "":
+            if(ask_yes_or_no("Is this the right API Token: " + bold(reconfig_pi_hole_Raw_API_Token) + " ?", "yes") == True):
+                pih_Raw_API_Token = reconfig_pi_hole_Raw_API_Token
+            else:
+                pih_Raw_API_Token = input(bold("... API Token: "))
+        else:
+            pih_Raw_API_Token = input(bold("... API Token: "))
 
         file.write("# HiPiHo Config File \n")
         file.write("IP="            + pih_ip            + "\n")
@@ -99,8 +184,13 @@ pi_hole_ILoveCandy    = lines[4].split("=")[1].rstrip()
 pi_hole_Raw_API_Token = lines[5].split("=")[1].rstrip()
 file.close()
 
-pi_hole_API_auth = pi_hole_auth + pi_hole_Raw_API_Token
-pi_hole          = pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port + pi_hole_ip_end
+reconfig_pi_hole_ip            = pi_hole_ip
+reconfig_pi_hole_port          = pi_hole_port
+reconfig_pi_hole_border        = pi_hole_border
+reconfig_pi_hole_ILoveCandy    = pi_hole_ILoveCandy
+reconfig_pi_hole_Raw_API_Token = pi_hole_Raw_API_Token
+pi_hole_API_auth               = pi_hole_auth + pi_hole_Raw_API_Token
+pi_hole                        = pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port + pi_hole_ip_end
 
 def turn_pih(state):
     if pi_hole_Raw_API_Token == "":
@@ -109,6 +199,10 @@ def turn_pih(state):
         print("  You can get your \"Raw API Token\" by logging into the Pi-Hole, going to the menu item \"Settings\",")
         print("  then to the sub-item \"API / Web interface\" and selecting the button \"Show API Token\".\n")        
         print("  To enter a raw API token please call \n  Usage: " + bold("hipiho -n") + "\n  reconfigure the HiPiHo.\n")
+        pih_web_admin = pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port + "/admin"
+        if ask_yes_or_no("  Do you want to open " + bold("Pi-Hole WEB-Admin") + " >>> " + pih_web_admin + " <<< ?", "yes") == True:
+            webbrowser.open(pih_web_admin)
+        print("")
         exit()
     else:        
         if state == "ON":
@@ -173,12 +267,7 @@ def check_pihole():
             print("Pi-Hole is not reachable")
             exit()
     except:
-        print("Pi-Hole is not reachable")
-        print("Do you want to create a new config?")
-        print("1) Yes")
-        print("2) No")
-        choice = input("Your choice: ")
-        if choice == "1":
+        if(ask_yes_or_no("Pi-Hole is not reachable!\nDo you want to create a new config?", "yes") == True):
             os.remove(config)
             os.rmdir(home_path + config_path)
             check_config(home_path + config_path)
@@ -218,6 +307,7 @@ reply_BLOB                   = pi_hole_status['reply_BLOB']
 dns_queries_all_replies      = pi_hole_status['dns_queries_all_replies']
 privacy_level                = pi_hole_status['privacy_level']
 space                        = ' '
+space_line_border            = ''
 border_space                 = ''
 border_space_top_enabled     = ''
 border_space_top_disabled    = '' 
@@ -259,6 +349,7 @@ def jump_bar(percent):
 if run_level == 0:
     if pi_hole_border == "yes":
         print("")
+        space_line_border = '––––'
 
     print(border_space + status)
     print(border_space + border_space + bold("Network address:\t") + "",pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port)
@@ -272,7 +363,7 @@ if run_level == 0:
 
     if len(sys.argv) == 2 and sys.argv[1] != "":
         if sys.argv[1] == "-a" or sys.argv[1] == "--all" or sys.argv[1] == "all" or sys.argv[1] == "-A":
-            print(border_space + bold("––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––"))
+            print(border_space + bold(space_line_border + "––––––––––––––––––––––––––––––––––––––––––––––––––––––––"))
             print(border_space + border_space + bold("Unique Domains: \t ")        + str(unique_domains)          + bold("\tReply IP: \t ")            + str(reply_IP))
             print(border_space + border_space + bold("Queries forwarded: \t ")     + str(queries_forwarded)       + bold("\tReply DOMAIN: \t ")        + str(reply_DOMAIN))
             print(border_space + border_space + bold("Queries cached: \t ")        + str(queries_cached)          + bold("\tReply SERVFAIL:  ")        + str(reply_SERVFAIL))
@@ -284,7 +375,7 @@ if run_level == 0:
             print(border_space + border_space + bold("Reply NODATA: \t\t ")        + str(reply_NODATA)            + bold("\tReply NONE: \t ")          + str(reply_NONE))
             print(border_space + border_space + bold("Reply NXDOMAIN: \t ")        + str(reply_NXDOMAIN)          + bold("\tReply BLOB: \t ")          + str(reply_BLOB))
             print(border_space + border_space + bold("Reply CNAME: \t\t ")         + str(reply_CNAME)             + bold("\tPrivacy level: \t ")       + str(privacy_level))
-            print(border_space + bold("––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––"))
+            print(border_space + bold(space_line_border + "––––––––––––––––––––––––––––––––––––––––––––––––––––––––"))
     print(border_space + border_space + bold("Last updated:") + "\t\t",gravity_last_updated_days,"day/s",gravity_last_updated_hours,"hour/s",gravity_last_updated_minutes,"minute/s")
 
     if pi_hole_ILoveCandy == "yes":
