@@ -25,6 +25,9 @@ Simply download the script and save it at the desired location °)
     chmod +x /usr/bin/hipiho
     exit
 
+### Install HiPiHo on Debian/Ubuntu with WGET
+    wget https://raw.githubusercontent.com/MTrage/hipiho/master/usr/bin/hipiho && sudo cp hipiho /usr/bin/hipiho && rm hipiho && sudo chmod +x /usr/bin/hipiho
+
 ### Start / use
 The script can of course be called with
 
