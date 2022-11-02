@@ -13,7 +13,7 @@
 import os, sys, requests, webbrowser
 from pathlib import Path
 
-version          = "1.0.0"
+version          = "1.0.1"
 
 config_path      = "/.config/hipiho/"   # configuration storage folder in the home folder
 config_file      = "default.config"     # name of the configuration file
@@ -236,7 +236,7 @@ def check_args():
             turn_pih("OFF")
         if sys.argv[1] == "-h" or sys.argv[1] == "--help" or sys.argv[1] == "help" or sys.argv[1] == "-H":
             help_info()
-        if sys.argv[1] == "-v" or sys.argv[1] == "--version" or sys.argv[1] == "version" or sys.argv[1] == "-V":
+        if sys.argv[1] == "-v" or sys.argv[1] == "--version" or sys.argv[1] == "vesion" or sys.argv[1] == "-V":
             print("HiPiHo Version " + version)
             exit()
         elif sys.argv[1] == "-n" or sys.argv[1] == "--new" or sys.argv[1] == "new" or sys.argv[1] == "-N":
@@ -345,10 +345,12 @@ percent_blocked_str   = str(int(percent_blocked))
 def jump_bar(percent):
     return bold("Percent blocked:\t ") + "[%-25s] %d%%" % ('#'*int(percent/4), percent)
 
+
 def main():
     if run_level == 0:
         if pi_hole_border == "yes":
             print("")
+            global space_line_border
             space_line_border = '––––'
 
         print(border_space + status)
@@ -379,7 +381,7 @@ def main():
         print(border_space + border_space + bold("Last updated:") + "\t\t",gravity_last_updated_days,"day/s",gravity_last_updated_hours,"hour/s",gravity_last_updated_minutes,"minute/s")
 
         if pi_hole_ILoveCandy == "yes":
-            print(border_space + "\033[44m {}\033[00m" .format("\b " + border_space_bottom + percent_blocked_str + "% "),"\033[43m {}\033[00m" .format("\b\b" + percent_bar_a),"\b\033[42m {}\033[00m" .format("" + percent_bar_b))
+            print(border_space + "\033[44m {}\033[00m" .format("\b " + border_space_bottom + percent_blocked_str + "% "),"\033[43m {}\033[00m" .format("\b\b" + percent_bar_a),"\b\033[42m {}\033[00m" .format(" " + percent_bar_b))
         
         if pi_hole_border == "yes":
             print("")
