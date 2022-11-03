@@ -10,16 +10,19 @@
 # have fun with this one,
 # Marc-André Tragé (github.com/MTrage/hipiho)
 
-import os, sys, requests, webbrowser
+import os, sys, subprocess, socket, requests, webbrowser
 from pathlib import Path
 
-version          = "1.0.1"
+version          = "1.2.0"
 
 config_path      = "/.config/hipiho/"   # configuration storage folder in the home folder
 config_file      = "default.config"     # name of the configuration file
 pi_hole_ip_beg   = "http://"            # should only be changed to "https://"" if this has also been installed in the pi-hole
 pi_hole_ip_end   = "/admin/api.php"     # standard php to api
 pi_hole_auth     = "?auth="             # authentification appendix for the API Raw Token
+
+ping_ip          = "8.8.8.8"
+ping_port        = 53
 
 reconfig_pi_hole_ip            = ""
 reconfig_pi_hole_port          = ""
@@ -50,7 +53,13 @@ def check_if_exist_config_file():
 check_if_exist_config_file()
 
 def bold(text):
-    return "\033[1m {}\033[00m" .format("\b" + text)
+    return "\033[1m{}\033[00m" .format(text)
+
+def alert(text):
+    return "\033[41m{}\033[00m" .format(text)
+
+def blue(text):
+    return "\033[44m{}\033[00m" .format(text)
 
 def ask_yes_or_no(question, default="yes"):
     valid = {"yes":True, "y":True, "no":False, "n":False}
@@ -163,7 +172,7 @@ def check_config(path):
         else:
             pih_Raw_API_Token = input(bold("... API Token: "))
 
-        file.write("# HiPiHo Config File \n")
+        file.write("–––  HiPiHo Config File ––– Version:" + version + "\n")
         file.write("IP="            + pih_ip            + "\n")
         file.write("PORT="          + pih_port          + "\n")
         file.write("BORDERS="       + pih_borders       + "\n")
@@ -176,6 +185,7 @@ check_config(home_path + config_path)
 
 file = open(config, "r")
 lines = file.readlines()
+version_config_file   = lines[0].split(":")[1].rstrip()
 pi_hole_ip            = lines[1].split("=")[1].rstrip()
 pi_hole_port          = lines[2].split("=")[1].rstrip()
 pi_hole_border        = lines[3].split("=")[1].rstrip()
@@ -183,6 +193,8 @@ pi_hole_ILoveCandy    = lines[4].split("=")[1].rstrip()
 pi_hole_Raw_API_Token = lines[5].split("=")[1].rstrip()
 file.close()
 
+version_config_file = version_config_file.replace(" ", "")
+       
 reconfig_pi_hole_ip            = pi_hole_ip
 reconfig_pi_hole_port          = pi_hole_port
 reconfig_pi_hole_border        = pi_hole_border
@@ -226,6 +238,13 @@ def turn_pih(state):
                 exit()
     exit()
 
+def get_pihole_version():
+    pi_hole_version = requests.get(pi_hole + '?versions').json()
+    v = pi_hole_version
+    print(bold("  Core current: ") + v['core_current'] + " " + bold("latest: ") + v['core_latest'])
+    print(bold("   Web current: ") + v['web_current']  + " " + bold("latest: ") + v['web_latest'])
+    print(bold("   FTL current: ") + v['FTL_current']  + " " + bold("latest: ") + v['FTL_latest'])
+
 def check_args():
     if len(sys.argv) == 1:
         run_level = 3
@@ -237,7 +256,12 @@ def check_args():
         if sys.argv[1] == "-h" or sys.argv[1] == "--help" or sys.argv[1] == "help" or sys.argv[1] == "-H":
             help_info()
         if sys.argv[1] == "-v" or sys.argv[1] == "--version" or sys.argv[1] == "vesion" or sys.argv[1] == "-V":
-            print("HiPiHo Version " + version)
+            print(bold("HiPiHo Version: ") + version)
+            if not version == version_config_file:    
+                print(alert(bold("Config File Version " + version_config_file + " is not the same as the current HiPiHo Version " + version + "!")))
+                print("Please call " + bold("hipiho -n") + " to reconfigure the HiPiHo.")
+            if not pi_hole_Raw_API_Token == "":
+                get_pihole_version()
             exit()
         elif sys.argv[1] == "-n" or sys.argv[1] == "--new" or sys.argv[1] == "new" or sys.argv[1] == "-N":
             print("Deleting old config...")
@@ -345,6 +369,14 @@ percent_blocked_str   = str(int(percent_blocked))
 def jump_bar(percent):
     return bold("Percent blocked:\t ") + "[%-25s] %d%%" % ('#'*int(percent/4), percent)
 
+def get_main_ip():
+    main_ip = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    main_ip.connect((ping_ip, ping_port))
+    return main_ip.getsockname()[0]
+
+def get_gateway_ip():
+    gateway_ip = subprocess.check_output("ip route | grep default | cut -d ' ' -f 3", shell=True).decode('utf-8')
+    return gateway_ip.rstrip()
 
 def main():
     if run_level == 0:
@@ -365,23 +397,50 @@ def main():
 
         if len(sys.argv) == 2 and sys.argv[1] != "":
             if sys.argv[1] == "-a" or sys.argv[1] == "--all" or sys.argv[1] == "all" or sys.argv[1] == "-A":
+                print(border_space + border_space + bold("Client IP:\t\t ") + get_main_ip())
+                print(border_space + border_space + bold("Gateway:\t\t ") + get_gateway_ip())
                 print(border_space + bold(space_line_border + "––––––––––––––––––––––––––––––––––––––––––––––––––––––––"))
-                print(border_space + border_space + bold("Unique Domains: \t ")        + str(unique_domains)          + bold("\tReply IP: \t ")            + str(reply_IP))
-                print(border_space + border_space + bold("Queries forwarded: \t ")     + str(queries_forwarded)       + bold("\tReply DOMAIN: \t ")        + str(reply_DOMAIN))
-                print(border_space + border_space + bold("Queries cached: \t ")        + str(queries_cached)          + bold("\tReply SERVFAIL:  ")        + str(reply_SERVFAIL))
-                print(border_space + border_space + bold("Clients ever seen: \t ")     + str(clients_ever_seen)       + bold("\tReply RRNAME: \t ")        + str(reply_RRNAME))
-                print(border_space + border_space + bold("Unique clients: \t ")        + str(unique_clients)          + bold("\tReply REFUSED: \t ")       + str(reply_REFUSED))
-                print(border_space + border_space + bold("DNS queries all types: \t ") + str(dns_queries_all_types)   + bold("\tReply NOTIMP: \t ")        + str(reply_NOTIMP))
-                print(border_space + border_space + bold("DNS queries all replies: ")  + str(dns_queries_all_replies) + bold("\tReply OTHER: \t ")         + str(reply_OTHER))
-                print(border_space + border_space + bold("Reply UNKNOWN: \t\t ")       + str(reply_UNKNOWN)           + bold("\tReply DNSSEC: \t ")        + str(reply_DNSSEC))
-                print(border_space + border_space + bold("Reply NODATA: \t\t ")        + str(reply_NODATA)            + bold("\tReply NONE: \t ")          + str(reply_NONE))
-                print(border_space + border_space + bold("Reply NXDOMAIN: \t ")        + str(reply_NXDOMAIN)          + bold("\tReply BLOB: \t ")          + str(reply_BLOB))
-                print(border_space + border_space + bold("Reply CNAME: \t\t ")         + str(reply_CNAME)             + bold("\tPrivacy level: \t ")       + str(privacy_level))
+                print(border_space + border_space + bold("Unique Domains: \t ")        + str(unique_domains)          + bold("\t Reply IP:\t ")            + str(reply_IP))
+                print(border_space + border_space + bold("Queries forwarded: \t ")     + str(queries_forwarded)       + bold("\t Reply DOMAIN:\t ")        + str(reply_DOMAIN))
+                print(border_space + border_space + bold("Queries cached: \t ")        + str(queries_cached)          + bold("\t Reply SERVFAIL: ")        + str(reply_SERVFAIL))
+                print(border_space + border_space + bold("Clients ever seen: \t ")     + str(clients_ever_seen)       + bold("\t Reply RRNAME:\t ")        + str(reply_RRNAME))
+                print(border_space + border_space + bold("Unique clients: \t ")        + str(unique_clients)          + bold("\t Reply REFUSED:\t ")       + str(reply_REFUSED))
+                print(border_space + border_space + bold("DNS queries all types: \t ") + str(dns_queries_all_types)   + bold("\t Reply NOTIMP:\t ")        + str(reply_NOTIMP))
+                print(border_space + border_space + bold("DNS queries all replies: ")  + str(dns_queries_all_replies) + bold("\t Reply OTHER:\t ")         + str(reply_OTHER))
+                print(border_space + border_space + bold("Reply UNKNOWN: \t\t ")       + str(reply_UNKNOWN)           + bold("\t Reply DNSSEC:\t ")        + str(reply_DNSSEC))
+                print(border_space + border_space + bold("Reply NODATA: \t\t ")        + str(reply_NODATA)            + bold("\t Reply NONE:\t ")          + str(reply_NONE))
+                print(border_space + border_space + bold("Reply NXDOMAIN: \t ")        + str(reply_NXDOMAIN)          + bold("\t Reply BLOB:\t ")          + str(reply_BLOB))
+                print(border_space + border_space + bold("Reply CNAME: \t\t ")         + str(reply_CNAME)             + bold("\t Privacy level:\t ")       + str(privacy_level))
                 print(border_space + bold(space_line_border + "––––––––––––––––––––––––––––––––––––––––––––––––––––––––"))
+
+                def top(i):
+                    border = ""
+                    if pi_hole_border == "yes":
+                        border = border_space
+                    numbers_max_space = "41"
+                    ispace = numbers_max_space
+                    top_domains = requests.get(pi_hole + pi_hole_API_auth + '&topItems='+i).json()
+                    top_domains = top_domains['top_queries']
+                    top_clients = requests.get(pi_hole + pi_hole_API_auth + '&topClients='+i).json()
+                    top_clients = top_clients['top_sources']
+                    top = zip(top_domains, top_clients)
+                    head_top_domains = "Top Permitted Domains:"
+                    head_top_clients = "Top Clients:"
+                    head_space = " " * (int(numbers_max_space) - int(len(head_top_domains)))
+                    print(bold(border + head_top_domains) + " " + head_space  + " " + bold(head_top_clients))
+                    for domain, client in top:
+                        ispace = int(ispace) - int(len(domain))
+                        real_space = ispace * " "
+                        print(border + domain, "" + real_space + "" ,client.replace("localhost|127.0.0.1","127.0.0.1"))
+                        ispace = numbers_max_space
+                    print(border_space + bold(space_line_border + "––––––––––––––––––––––––––––––––––––––––––––––––––––––––"))
+
+                if not pi_hole_Raw_API_Token == "":
+                    top("10")
         print(border_space + border_space + bold("Last updated:") + "\t\t",gravity_last_updated_days,"day/s",gravity_last_updated_hours,"hour/s",gravity_last_updated_minutes,"minute/s")
 
         if pi_hole_ILoveCandy == "yes":
-            print(border_space + "\033[44m {}\033[00m" .format("\b " + border_space_bottom + percent_blocked_str + "% "),"\033[43m {}\033[00m" .format("\b\b" + percent_bar_a),"\b\033[42m {}\033[00m" .format(" " + percent_bar_b))
+            print(border_space + "\033[44m {}\033[00m" .format("\b " + border_space_bottom + percent_blocked_str + "% "),"\033[43m {}\033[00m" .format("\b\b" + percent_bar_a),"\b\033[42m {}\033[00m" .format("" + percent_bar_b))
         
         if pi_hole_border == "yes":
             print("")
