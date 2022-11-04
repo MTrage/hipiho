@@ -13,7 +13,7 @@
 import os, sys, subprocess, socket, requests, webbrowser
 from pathlib import Path
 
-version          = "1.2.0"
+version          = "1.2.1"
 
 config_path      = "/.config/hipiho/"   # configuration storage folder in the home folder
 config_file      = "default.config"     # name of the configuration file
@@ -280,6 +280,17 @@ if not config_file_exist:
 if len(sys.argv) == 2 and sys.argv[1] != "":
     if sys.argv[1] != "-a" and sys.argv[1] != "--all" and sys.argv[1] != "all" and sys.argv[1] != "-A":
         check_args()
+
+
+
+if not version == version_config_file:
+    print(alert(bold("Config File Version " + version_config_file + " is not the same as the current HiPiHo Version " + version + "!")))
+    print("Please call " + bold("hipiho -n") + " to reconfigure the HiPiHo.")
+    exit()
+
+
+
+
 
 def check_pihole():
     try:
