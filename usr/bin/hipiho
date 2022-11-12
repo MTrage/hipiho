@@ -13,16 +13,16 @@
 import os, sys, subprocess, socket, requests, webbrowser
 from pathlib import Path
 
-version          = "1.2.1"
+version                        = "1.2.3"
 
-config_path      = "/.config/hipiho/"   # configuration storage folder in the home folder
-config_file      = "default.config"     # name of the configuration file
-pi_hole_ip_beg   = "http://"            # should only be changed to "https://"" if this has also been installed in the pi-hole
-pi_hole_ip_end   = "/admin/api.php"     # standard php to api
-pi_hole_auth     = "?auth="             # authentification appendix for the API Raw Token
+config_path                    = "/.config/hipiho/" # configuration storage folder in the home folder
+config_file                    = "default.config"   # name of the configuration file
+pi_hole_ip_beg                 = "http://"          # should only be changed to "https://"" if this has also been installed in the pi-hole
+pi_hole_ip_end                 = "/admin/api.php"   # standard php to api
+pi_hole_auth                   = "?auth="           # authentification appendix for the API Raw Token
 
-ping_ip          = "8.8.8.8"
-ping_port        = 53
+ping_ip                        = "8.8.8.8"
+ping_port                      = 53
 
 reconfig_pi_hole_ip            = ""
 reconfig_pi_hole_port          = ""
@@ -185,16 +185,16 @@ check_config(home_path + config_path)
 
 file = open(config, "r")
 lines = file.readlines()
-version_config_file   = lines[0].split(":")[1].rstrip()
-pi_hole_ip            = lines[1].split("=")[1].rstrip()
-pi_hole_port          = lines[2].split("=")[1].rstrip()
-pi_hole_border        = lines[3].split("=")[1].rstrip()
-pi_hole_ILoveCandy    = lines[4].split("=")[1].rstrip()
-pi_hole_Raw_API_Token = lines[5].split("=")[1].rstrip()
+version_config_file            = lines[0].split(":")[1].rstrip()
+pi_hole_ip                     = lines[1].split("=")[1].rstrip()
+pi_hole_port                   = lines[2].split("=")[1].rstrip()
+pi_hole_border                 = lines[3].split("=")[1].rstrip()
+pi_hole_ILoveCandy             = lines[4].split("=")[1].rstrip()
+pi_hole_Raw_API_Token          = lines[5].split("=")[1].rstrip()
 file.close()
 
-version_config_file = version_config_file.replace(" ", "")
-       
+version_config_file            = version_config_file.replace(" ", "")
+
 reconfig_pi_hole_ip            = pi_hole_ip
 reconfig_pi_hole_port          = pi_hole_port
 reconfig_pi_hole_border        = pi_hole_border
@@ -281,16 +281,10 @@ if len(sys.argv) == 2 and sys.argv[1] != "":
     if sys.argv[1] != "-a" and sys.argv[1] != "--all" and sys.argv[1] != "all" and sys.argv[1] != "-A":
         check_args()
 
-
-
 if not version == version_config_file:
     print(alert(bold("Config File Version " + version_config_file + " is not the same as the current HiPiHo Version " + version + "!")))
     print("Please call " + bold("hipiho -n") + " to reconfigure the HiPiHo.")
     exit()
-
-
-
-
 
 def check_pihole():
     try:
@@ -389,7 +383,10 @@ def get_gateway_ip():
     gateway_ip = subprocess.check_output("ip route | grep default | cut -d ' ' -f 3", shell=True).decode('utf-8')
     return gateway_ip.rstrip()
 
+percent_blocked_space = ""
+
 def main():
+    global percent_blocked_space
     if run_level == 0:
         if pi_hole_border == "yes":
             print("")
@@ -450,8 +447,12 @@ def main():
                     top("10")
         print(border_space + border_space + bold("Last updated:") + "\t\t",gravity_last_updated_days,"day/s",gravity_last_updated_hours,"hour/s",gravity_last_updated_minutes,"minute/s")
 
+        if len(percent_blocked_str) == 1:
+            percent_blocked_space = "  " 
+        else:
+            percent_blocked_space = " "    
         if pi_hole_ILoveCandy == "yes":
-            print(border_space + "\033[44m {}\033[00m" .format("\b " + border_space_bottom + percent_blocked_str + "% "),"\033[43m {}\033[00m" .format("\b\b" + percent_bar_a),"\b\033[42m {}\033[00m" .format("" + percent_bar_b))
+            print(border_space + "\033[44m {}\033[00m" .format("\b " + border_space_bottom + percent_blocked_str + "%" + percent_blocked_space),"\033[43m {}\033[00m" .format("\b\b" + percent_bar_a),"\b\033[42m {}\033[00m" .format("" + percent_bar_b))
         
         if pi_hole_border == "yes":
             print("")
