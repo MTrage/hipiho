@@ -13,7 +13,7 @@
 import os, sys, subprocess, socket, requests, webbrowser
 from pathlib import Path
 
-version                        = "1.2.3"
+version                        = "1.2.4"
 
 config_path                    = "/.config/hipiho/" # configuration storage folder in the home folder
 config_file                    = "default.config"   # name of the configuration file
@@ -24,18 +24,20 @@ pi_hole_auth                   = "?auth="           # authentification appendix 
 ping_ip                        = "8.8.8.8"
 ping_port                      = 53
 
-reconfig_pi_hole_ip            = ""
+#  Script parts have been named in such a way that they should be self-explanatory on closer inspection due to their names. 
+#  If you still have questions, just ask °)
+
+reconfig_pi_hole_ip            = "" 
 reconfig_pi_hole_port          = ""
 reconfig_pi_hole_border        = ""
 reconfig_pi_hole_ILoveCandy    = ""
 reconfig_pi_hole_Raw_API_Token = ""
-
-#  Script parts have been named in such a way that they should be self-explanatory on closer inspection due to their names. 
-#  If you still have questions, just ask °)
+percent_blocked_space          = ""
 
 run_level = 0
 home_path = str(Path.home())
 config    = home_path + config_path + config_file
+
 
 def check_if_exist_config_file():
     if not os.path.exists(config):
@@ -60,6 +62,19 @@ def alert(text):
 
 def blue(text):
     return "\033[44m{}\033[00m" .format(text)
+
+def cyan(text):
+    return "\033[46m{}\033[00m" .format(text)
+
+def text_blue(text):
+    return "\033[34m{}\033[00m" .format(text)
+
+def text_cyan(text):
+    return "\033[36m{}\033[00m" .format(text)
+
+def text_yellow(text):
+    return "\033[33m{}\033[00m" .format(text)
+
 
 def ask_yes_or_no(question, default="yes"):
     valid = {"yes":True, "y":True, "no":False, "n":False}
@@ -112,7 +127,7 @@ def check_config(path):
         else:
             pih_ip = input(bold("... HTTP IP: "))
 
-        if reconfig_pi_hole_port  == "":
+        if reconfig_pi_hole_port == "":
             pih_port = "80"
         if reconfig_pi_hole_port != "":
             pih_port = reconfig_pi_hole_port
@@ -334,32 +349,34 @@ reply_NONE                   = pi_hole_status['reply_NONE']
 reply_BLOB                   = pi_hole_status['reply_BLOB']
 dns_queries_all_replies      = pi_hole_status['dns_queries_all_replies']
 privacy_level                = pi_hole_status['privacy_level']
+
 space                        = ' '
 space_line_border            = ''
+
 border_space                 = ''
 border_space_top_enabled     = ''
 border_space_top_disabled    = '' 
 border_space_bottom          = ''
 
-if pi_hole_border == "yes":
-        border_space = '    '
+if pi_hole_border            == "yes":
+        border_space         = '    '
 
-if pi_hole_border == "yes":
-        border_space_bottom = '>>> '
+if pi_hole_border            == "yes":
+        border_space_bottom  = '>>> '
 else:
-        border_space_bottom = ''
+        border_space_bottom  = ''
 
 if pi_hole_border == "yes":
         border_space_top_enabled  = '\033[44m–-––\033'
         border_space_top_disabled = '\033[41m–-––\033'
 else:
-    border_space_top_enabled  = '\033[44m\033'
-    border_space_top_disabled = '\033[41m\033'
+    border_space_top_enabled      = '\033[44m\033'
+    border_space_top_disabled     = '\033[41m\033'
 
-if status == 'enabled':
-    status = "\033[44m" + bold(" Pi-Hole ") + border_space_top_enabled  + '––––––––––––––––––––––––––– Status: [ ENABLED ] \033[00m'
+if status   == 'enabled':
+    status  = "\033[44m" + bold(" Pi-Hole ") + border_space_top_enabled  + '––––––––––––––––––––––––––– Status: [ ENABLED ] \033[00m'
 elif status == 'disabled':
-    status = "\033[41m" + bold(" Pi-Hole ") + border_space_top_disabled + '–––––––––––––––––––––––––– Status: [ DISABLED ] \033[00m'
+    status  = "\033[41m" + bold(" Pi-Hole ") + border_space_top_disabled + '–––––––––––––––––––––––––– Status: [ DISABLED ] \033[00m'
 
 def percent(num, total):
     return (num / total) * 100
@@ -382,8 +399,6 @@ def get_main_ip():
 def get_gateway_ip():
     gateway_ip = subprocess.check_output("ip route | grep default | cut -d ' ' -f 3", shell=True).decode('utf-8')
     return gateway_ip.rstrip()
-
-percent_blocked_space = ""
 
 def main():
     global percent_blocked_space
@@ -424,37 +439,60 @@ def main():
                 def top(i):
                     border = ""
                     if pi_hole_border == "yes":
-                        border = border_space
+                        border        = border_space
                     numbers_max_space = "41"
-                    ispace = numbers_max_space
-                    top_domains = requests.get(pi_hole + pi_hole_API_auth + '&topItems='+i).json()
-                    top_domains = top_domains['top_queries']
-                    top_clients = requests.get(pi_hole + pi_hole_API_auth + '&topClients='+i).json()
-                    top_clients = top_clients['top_sources']
-                    top = zip(top_domains, top_clients)
-                    head_top_domains = "Top Permitted Domains:"
-                    head_top_clients = "Top Clients:"
+                    ispace            = numbers_max_space
+                    top_domains       = requests.get(pi_hole + pi_hole_API_auth + '&topItems='+i).json()
+                    top_domains       = top_domains['top_queries']
+                    top_clients       = requests.get(pi_hole + pi_hole_API_auth + '&topClients='+i).json()
+                    top_clients       = top_clients['top_sources']
+                    top               = zip(top_domains, top_clients)
+                    head_top_domains  = "Top Permitted Domains:"
+                    head_top_clients  = "Top Clients:"
                     head_space = " " * (int(numbers_max_space) - int(len(head_top_domains)))
-                    print(bold(border + head_top_domains) + " " + head_space  + " " + bold(head_top_clients))
+                    print(bold(border + head_top_domains) + " " + head_space + " " + bold(head_top_clients))
                     for domain, client in top:
                         ispace = int(ispace) - int(len(domain))
-                        real_space = ispace * " "
+                        real_space    = ispace * " "
                         print(border + domain, "" + real_space + "" ,client.replace("localhost|127.0.0.1","127.0.0.1"))
-                        ispace = numbers_max_space
-                    print(border_space + bold(space_line_border + "––––––––––––––––––––––––––––––––––––––––––––––––––––––––"))
+                        ispace        = numbers_max_space
+                    
+                    pi_hole_API_data               = pi_hole + pi_hole_API_auth
+                    API_data_topItems              = requests.get(pi_hole_API_data + "&topItems").json()
+                    
+                    ### topItems == Top Permitted Domains  ???
+                    #print(bold("Top Queries:"))
+                    #for x in API_data_topItems['top_queries']:
+                    #    print(x)
 
+                    print(bold(border + alert(" Top Advertisers                     " + border + head_space)))
+                    i = 0
+                    for x in API_data_topItems['top_ads']:
+                        y = i
+                        if len(str(i+1)) < 2:
+                            y = str(int(1 + i))
+                            y = "0" + y
+                        else:
+                            y = "10"
+                        if i % 2: 
+                            print(border + text_yellow(" [" + y + "] ") + text_blue(x))
+                        else:
+                            print(border + text_yellow(" [" + y + "] ") + text_cyan(x))
+                        i += 1
+                    
                 if not pi_hole_Raw_API_Token == "":
                     top("10")
-        print(border_space + border_space + bold("Last updated:") + "\t\t",gravity_last_updated_days,"day/s",gravity_last_updated_hours,"hour/s",gravity_last_updated_minutes,"minute/s")
+                    
+        print(border_space + bold("Last updated:") + "\t\t",gravity_last_updated_days,"day/s",gravity_last_updated_hours,"hour/s",gravity_last_updated_minutes,"minute/s")
 
         if len(percent_blocked_str) == 1:
-            percent_blocked_space = "  " 
+            percent_blocked_space   = "  " 
         else:
-            percent_blocked_space = " "    
-        if pi_hole_ILoveCandy == "yes":
+            percent_blocked_space   = " "    
+        if pi_hole_ILoveCandy       == "yes":
             print(border_space + "\033[44m {}\033[00m" .format("\b " + border_space_bottom + percent_blocked_str + "%" + percent_blocked_space),"\033[43m {}\033[00m" .format("\b\b" + percent_bar_a),"\b\033[42m {}\033[00m" .format("" + percent_bar_b))
         
-        if pi_hole_border == "yes":
+        if pi_hole_border           == "yes":
             print("")
 
         int(percent_blocked)
