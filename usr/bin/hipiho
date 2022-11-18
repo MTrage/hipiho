@@ -13,31 +13,32 @@
 import os, sys, subprocess, socket, requests, webbrowser
 from pathlib import Path
 
-version                        = "1.2.4"
-
 config_path                    = "/.config/hipiho/" # configuration storage folder in the home folder
 config_file                    = "default.config"   # name of the configuration file
 pi_hole_ip_beg                 = "http://"          # should only be changed to "https://"" if this has also been installed in the pi-hole
 pi_hole_ip_end                 = "/admin/api.php"   # standard php to api
 pi_hole_auth                   = "?auth="           # authentification appendix for the API Raw Token
+top_permitted_domains_number   = 10                 # option for API user – show top permitted domains (default: 10) 1 - 100
+
+#  Script parts have been named in such a way that they should be self-explanatory on closer inspection due to their names.
+#  If you still have questions, just ask °)
+
+version                        = "1.5.0"
 
 ping_ip                        = "8.8.8.8"
 ping_port                      = 53
 
-#  Script parts have been named in such a way that they should be self-explanatory on closer inspection due to their names. 
-#  If you still have questions, just ask °)
+percent_blocked_space          = ""
 
-reconfig_pi_hole_ip            = "" 
+reconfig_pi_hole_ip            = ""
 reconfig_pi_hole_port          = ""
 reconfig_pi_hole_border        = ""
 reconfig_pi_hole_ILoveCandy    = ""
 reconfig_pi_hole_Raw_API_Token = ""
-percent_blocked_space          = ""
 
-run_level = 0
-home_path = str(Path.home())
-config    = home_path + config_path + config_file
-
+run_level                      = 0
+home_path                      = str(Path.home())
+config                         = home_path + config_path + config_file
 
 def check_if_exist_config_file():
     if not os.path.exists(config):
@@ -55,7 +56,7 @@ def check_if_exist_config_file():
 check_if_exist_config_file()
 
 def bold(text):
-    return "\033[1m{}\033[00m" .format(text)
+    return "\033[1m{}\033[00m"  .format(text)
 
 def alert(text):
     return "\033[41m{}\033[00m" .format(text)
@@ -66,8 +67,20 @@ def blue(text):
 def cyan(text):
     return "\033[46m{}\033[00m" .format(text)
 
+def yellow(text):
+    return "\033[43m{}\033[00m" .format(text)
+
+def white(text):
+    return "\033[47m{}\033[00m" .format(text)
+
 def text_blue(text):
     return "\033[34m{}\033[00m" .format(text)
+
+def text_red(text):
+    return "\033[31m{}\033[00m" .format(text)
+
+def text_green(text):
+    return "\033[32m{}\033[00m" .format(text)
 
 def text_cyan(text):
     return "\033[36m{}\033[00m" .format(text)
@@ -75,6 +88,11 @@ def text_cyan(text):
 def text_yellow(text):
     return "\033[33m{}\033[00m" .format(text)
 
+def text_grey(text):
+    return "\033[90m{}\033[00m" .format(text)
+
+def text_black(text):
+    return "\033[30m{}\033[00m" .format(text)
 
 def ask_yes_or_no(question, default="yes"):
     valid = {"yes":True, "y":True, "no":False, "n":False}
@@ -86,6 +104,7 @@ def ask_yes_or_no(question, default="yes"):
         prompt = " [y/N] "
     else:
         raise ValueError("invalid default answer: '%s'" % default)
+    
     while True:
         sys.stdout.write(question + prompt)
         choice = input().lower()
@@ -117,8 +136,10 @@ def check_config(path):
         
         if reconfig_pi_hole_ip  == "":
             pih_ip = "pi.hole"
+            
         if reconfig_pi_hole_ip != "":
             pih_ip = reconfig_pi_hole_ip
+            
         if reconfig_pi_hole_port != "":
             if(ask_yes_or_no("Is this the right IP/HOST: " + bold(reconfig_pi_hole_ip) + " ?", "yes") == True):
                 pih_ip = reconfig_pi_hole_ip
@@ -129,8 +150,10 @@ def check_config(path):
 
         if reconfig_pi_hole_port == "":
             pih_port = "80"
+            
         if reconfig_pi_hole_port != "":
             pih_port = reconfig_pi_hole_port
+            
         if reconfig_pi_hole_port != "":
             if(ask_yes_or_no("Is this the right Port: " + bold(reconfig_pi_hole_port) + " ?", "yes") == True):
                 pih_port = reconfig_pi_hole_port
@@ -141,8 +164,10 @@ def check_config(path):
 
         if reconfig_pi_hole_border  == "":
             pih_borders = ""
+            
         if reconfig_pi_hole_border != "":
             pih_borders = reconfig_pi_hole_border
+            
         if reconfig_pi_hole_border != "":
             if(ask_yes_or_no("Is show Borders " + bold(reconfig_pi_hole_border) + " the right choice?", "yes") == True):
                 pih_borders = reconfig_pi_hole_border
@@ -159,8 +184,10 @@ def check_config(path):
 
         if reconfig_pi_hole_ILoveCandy  == "":
             pih_ILoveCandy = "no"
+            
         if reconfig_pi_hole_ILoveCandy != "":
             pih_ILoveCandy = reconfig_pi_hole_ILoveCandy
+            
         if reconfig_pi_hole_ILoveCandy != "":
             if(ask_yes_or_no("Is show Candy " + bold(reconfig_pi_hole_ILoveCandy) + " the right choice?", "yes") == True):
                 pih_ILoveCandy = reconfig_pi_hole_ILoveCandy
@@ -176,9 +203,11 @@ def check_config(path):
                 pih_ILoveCandy = "no"
 
         if reconfig_pi_hole_Raw_API_Token  == "":
-            pih_Raw_API_Token = "" 
+            pih_Raw_API_Token = ""
+            
         if reconfig_pi_hole_Raw_API_Token != "":
             pih_Raw_API_Token = reconfig_pi_hole_Raw_API_Token
+            
         if reconfig_pi_hole_Raw_API_Token != "":
             if(ask_yes_or_no("Is this the right API Token: " + bold(reconfig_pi_hole_Raw_API_Token) + " ?", "yes") == True):
                 pih_Raw_API_Token = reconfig_pi_hole_Raw_API_Token
@@ -198,7 +227,7 @@ def check_config(path):
 
 check_config(home_path + config_path)
 
-file = open(config, "r")
+file  = open(config, "r")
 lines = file.readlines()
 version_config_file            = lines[0].split(":")[1].rstrip()
 pi_hole_ip                     = lines[1].split("=")[1].rstrip()
@@ -226,8 +255,10 @@ def turn_pih(state):
         print("  then to the sub-item \"API / Web interface\" and selecting the button \"Show API Token\".\n")        
         print("  To enter a raw API token please call \n  Usage: " + bold("hipiho -n") + "\n  reconfigure the HiPiHo.\n")
         pih_web_admin = pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port + "/admin"
+
         if ask_yes_or_no("  Do you want to open " + bold("Pi-Hole WEB-Admin") + " >>> " + pih_web_admin + " <<< ?", "yes") == True:
             webbrowser.open(pih_web_admin)
+            
         print("")
         exit()
     else:        
@@ -373,10 +404,18 @@ else:
     border_space_top_enabled      = '\033[44m\033'
     border_space_top_disabled     = '\033[41m\033'
 
-if status   == 'enabled':
-    status  = "\033[44m" + bold(" Pi-Hole ") + border_space_top_enabled  + '––––––––––––––––––––––––––– Status: [ ENABLED ] \033[00m'
-elif status == 'disabled':
-    status  = "\033[41m" + bold(" Pi-Hole ") + border_space_top_disabled + '–––––––––––––––––––––––––– Status: [ DISABLED ] \033[00m'
+
+if  pi_hole_ILoveCandy == "yes":
+    if status   == 'enabled':
+        status  = "\033[44m" + bold(" Pi-Hole ") + border_space_top_enabled  + '––––––––––––––––––––––––––– Status: [ ENABLED ] \033[00m'
+    elif status == 'disabled':
+        status  = "\033[41m" + bold(" Pi-Hole ") + border_space_top_disabled + '–––––––––––––––––––––––––– Status: [ DISABLED ] \033[00m'
+else:
+    if status   == 'enabled':
+        status  = bold(" Pi-Hole ") + '_______________________________ Status: [ ENABLED ]'
+    elif status == 'disabled':
+        status  = bold(" Pi-Hole ") + '______________________________ Status: [ DISABLED ]'
+
 
 def percent(num, total):
     return (num / total) * 100
@@ -389,7 +428,7 @@ percent_bar_b         = (50 - percent_blocked_round)*space
 percent_blocked_str   = str(int(percent_blocked))
 
 def jump_bar(percent):
-    return bold("Percent blocked:\t ") + "[%-25s] %d%%" % ('#'*int(percent/4), percent)
+    return "Percent blocked:\t  " + "[%-25s] %d%%" % ('#'*int(percent/4), percent)
 
 def get_main_ip():
     main_ip = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -400,72 +439,145 @@ def get_gateway_ip():
     gateway_ip = subprocess.check_output("ip route | grep default | cut -d ' ' -f 3", shell=True).decode('utf-8')
     return gateway_ip.rstrip()
 
-def main():
+def main():   
     global percent_blocked_space
     if run_level == 0:
         if pi_hole_border == "yes":
             print("")
             global space_line_border
             space_line_border = '––––'
-
+            
         print(border_space + status)
-        print(border_space + border_space + bold("Network address:\t") + "",pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port)
+
+              
+        if  pi_hole_ILoveCandy == "yes":
+            text = border_space + " " + bold(text_cyan("Network address:\t")) + text_yellow(" " + pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port)
+            print(text)
+        else:
+            print(border_space + " " + "Network address:\t" + "  " + pi_hole_ip_beg + pi_hole_ip + ":" + pi_hole_port)
 
         if not pi_hole_ILoveCandy == "yes":
-            print(border_space + border_space + jump_bar(percent_blocked))
+            print(border_space + " " + jump_bar(percent_blocked))
 
-        print(border_space + border_space + bold("Domains blocked:\t")   + "",'{0:,}'.format(domains_blocked).replace(',','.'))    
-        print(border_space + border_space + bold("Ads blocked today:\t") + "",ads_blocked_today)
-        print(border_space + border_space + bold("DNS queries today:\t") + "",dns_queries_today)
+        if  pi_hole_ILoveCandy == "yes":
+            text = border_space + " " + bold(text_cyan("Domains blocked:\t")) + " " + text_red('{0:,}'.format(domains_blocked).replace(',','.'))
+            print(text)
+        else:
+            print(border_space + " " + "Domains blocked:\t" + "  " +  '{0:,}'.format(domains_blocked).replace(',','.'))   
+
+        if  pi_hole_ILoveCandy == "yes":                 
+            text = border_space + " " + bold(text_cyan("Ads blocked:\t")) + " " + text_red('{0:,}'.format(ads_blocked_today).replace(',','.'))
+            print(text)
+        else:
+            print(border_space + " " + "Ads blocked:\t  "  + "" +  '{0:,}'.format(ads_blocked_today).replace(',','.'))
+               
+        if  pi_hole_ILoveCandy == "yes":
+            text = border_space + " " + bold(text_cyan("DNS queries today:\t")) + " " + text_red(dns_queries_today)
+            print(text)
+        else:
+            print(border_space + " " + "DNS queries today:\t" + "  " + str(dns_queries_today))
 
         if len(sys.argv) == 2 and sys.argv[1] != "":
             if sys.argv[1] == "-a" or sys.argv[1] == "--all" or sys.argv[1] == "all" or sys.argv[1] == "-A":
-                print(border_space + border_space + bold("Client IP:\t\t ") + get_main_ip())
-                print(border_space + border_space + bold("Gateway:\t\t ") + get_gateway_ip())
-                print(border_space + bold(space_line_border + "––––––––––––––––––––––––––––––––––––––––––––––––––––––––"))
-                print(border_space + border_space + bold("Unique Domains: \t ")        + str(unique_domains)          + bold("\t Reply IP:\t ")            + str(reply_IP))
-                print(border_space + border_space + bold("Queries forwarded: \t ")     + str(queries_forwarded)       + bold("\t Reply DOMAIN:\t ")        + str(reply_DOMAIN))
-                print(border_space + border_space + bold("Queries cached: \t ")        + str(queries_cached)          + bold("\t Reply SERVFAIL: ")        + str(reply_SERVFAIL))
-                print(border_space + border_space + bold("Clients ever seen: \t ")     + str(clients_ever_seen)       + bold("\t Reply RRNAME:\t ")        + str(reply_RRNAME))
-                print(border_space + border_space + bold("Unique clients: \t ")        + str(unique_clients)          + bold("\t Reply REFUSED:\t ")       + str(reply_REFUSED))
-                print(border_space + border_space + bold("DNS queries all types: \t ") + str(dns_queries_all_types)   + bold("\t Reply NOTIMP:\t ")        + str(reply_NOTIMP))
-                print(border_space + border_space + bold("DNS queries all replies: ")  + str(dns_queries_all_replies) + bold("\t Reply OTHER:\t ")         + str(reply_OTHER))
-                print(border_space + border_space + bold("Reply UNKNOWN: \t\t ")       + str(reply_UNKNOWN)           + bold("\t Reply DNSSEC:\t ")        + str(reply_DNSSEC))
-                print(border_space + border_space + bold("Reply NODATA: \t\t ")        + str(reply_NODATA)            + bold("\t Reply NONE:\t ")          + str(reply_NONE))
-                print(border_space + border_space + bold("Reply NXDOMAIN: \t ")        + str(reply_NXDOMAIN)          + bold("\t Reply BLOB:\t ")          + str(reply_BLOB))
-                print(border_space + border_space + bold("Reply CNAME: \t\t ")         + str(reply_CNAME)             + bold("\t Privacy level:\t ")       + str(privacy_level))
-                print(border_space + bold(space_line_border + "––––––––––––––––––––––––––––––––––––––––––––––––––––––––"))
+                
+                if  pi_hole_ILoveCandy == "yes":
+                    text = border_space + " " + bold(text_cyan("Client IP:\t\t ")) + text_green(get_main_ip())
+                    print(text)                    
+                else: 
+                    print(border_space + " " + "Client IP:\t\t  " + get_main_ip())
+                    
+                if  pi_hole_ILoveCandy == "yes":
+                    text = border_space + " " + bold(text_cyan("Gateway:\t\t ")) + text_green(get_gateway_ip())
+                    print(text)      
+                else:   
+                    print(border_space + " " + "Gateway:\t\t  " + get_gateway_ip())
+                
+                if  pi_hole_ILoveCandy == "yes":
+                    print(border_space + bold(yellow(text_blue(" Extended information provided by the API                   "))))
+                else:
+                    print("\n" + border_space + bold(" Extended information provided by the API "))
 
-                def top(i):
+                if  pi_hole_ILoveCandy == "yes":
+                    print(border_space + bold(text_blue(" Unique Domains            ")) + text_yellow(str(unique_domains))          + bold(text_blue("\t  Reply IP         ")) + text_yellow(str(reply_IP)))
+                    print(border_space + bold(text_cyan(" Queries forwarded         ")) + text_yellow(str(queries_forwarded))       + bold(text_cyan("\t  Reply DOMAIN     ")) + text_yellow(str(reply_DOMAIN)))
+                    print(border_space + bold(text_blue(" Queries cached            ")) + text_yellow(str(queries_cached))          + bold(text_blue("\t  Reply SERVFAIL   ")) + text_yellow(str(reply_SERVFAIL)))
+                    print(border_space + bold(text_cyan(" Clients ever seen         ")) + text_yellow(str(clients_ever_seen))       + bold(text_cyan("\t  Reply RRNAME     ")) + text_yellow(str(reply_RRNAME)))
+                    print(border_space + bold(text_blue(" Unique clients            ")) + text_yellow(str(unique_clients))          + bold(text_blue("\t  Reply REFUSED    ")) + text_yellow(str(reply_REFUSED)))
+                    print(border_space + bold(text_cyan(" DNS queries all types     ")) + text_yellow(str(dns_queries_all_types))   + bold(text_cyan("\t  Reply NOTIMP     ")) + text_yellow(str(reply_NOTIMP)))
+                    print(border_space + bold(text_blue(" DNS queries all replies   ")) + text_yellow(str(dns_queries_all_replies)) + bold(text_blue("\t  Reply OTHER      ")) + text_yellow(str(reply_OTHER)))
+                    print(border_space + bold(text_cyan(" Reply UNKNOWN             ")) + text_yellow(str(reply_UNKNOWN))           + bold(text_cyan("\t  Reply DNSSEC     ")) + text_yellow(str(reply_DNSSEC)))
+                    print(border_space + bold(text_blue(" Reply NODATA              ")) + text_yellow(str(reply_NODATA))            + bold(text_blue("\t  Reply NONE       ")) + text_yellow(str(reply_NONE)))
+                    print(border_space + bold(text_cyan(" Reply NXDOMAIN            ")) + text_yellow(str(reply_NXDOMAIN))          + bold(text_cyan("\t  Reply BLOB       ")) + text_yellow(str(reply_BLOB)))
+                    print(border_space + bold(text_blue(" Reply CNAME               ")) + text_yellow(str(reply_CNAME))             + bold(text_blue("\t  Privacy level    ")) + text_yellow(str(privacy_level)))
+
+                else:
+                    print(border_space + " Unique Domains            " + str(unique_domains)          + "\t  Reply IP         " + str(reply_IP))
+                    print(border_space + " Queries forwarded         " + str(queries_forwarded)       + "\t  Reply DOMAIN     " + str(reply_DOMAIN))
+                    print(border_space + " Queries cached            " + str(queries_cached)          + "\t  Reply SERVFAIL   " + str(reply_SERVFAIL))
+                    print(border_space + " Clients ever seen         " + str(clients_ever_seen)       + "\t  Reply RRNAME     " + str(reply_RRNAME))
+                    print(border_space + " Unique clients            " + str(unique_clients)          + "\t  Reply REFUSED    " + str(reply_REFUSED))
+                    print(border_space + " DNS queries all types     " + str(dns_queries_all_types)   + "\t  Reply NOTIMP     " + str(reply_NOTIMP))
+                    print(border_space + " DNS queries all replies   " + str(dns_queries_all_replies) + "\t  Reply OTHER      " + str(reply_OTHER))
+                    print(border_space + " Reply UNKNOWN             " + str(reply_UNKNOWN)           + "\t  Reply DNSSEC     " + str(reply_DNSSEC))
+                    print(border_space + " Reply NODATA              " + str(reply_NODATA)            + "\t  Reply NONE       " + str(reply_NONE))
+                    print(border_space + " Reply NXDOMAIN            " + str(reply_NXDOMAIN)          + "\t  Reply BLOB       " + str(reply_BLOB))
+                    print(border_space + " Reply CNAME               " + str(reply_CNAME)             + "\t  Privacy level    " + str(privacy_level))
+
+                def top_permitted_domains(i):
+                    
+                    pi_hole_API_auth_ok = requests.get(pi_hole + pi_hole_API_auth + '&topItems=' + i ).json()
+                    
+                    if len(pi_hole_API_auth_ok) == 0:
+                        print(bold(alert(" Advanced information cannot be displayed because the API key response is missing! ")))
+                        print(bold( blue(" Is your API key correct?                                                          ")))
+                        print(      blue(" You can use hipiho -n to disable API key checking or enter a new API key.         "))
+                        exit()                   
+                    
                     border = ""
+                    
                     if pi_hole_border == "yes":
                         border        = border_space
+                        
                     numbers_max_space = "41"
                     ispace            = numbers_max_space
-                    top_domains       = requests.get(pi_hole + pi_hole_API_auth + '&topItems='+i).json()
+                    top_domains       = requests.get(pi_hole + pi_hole_API_auth + '&topItems='   + i ).json()
                     top_domains       = top_domains['top_queries']
-                    top_clients       = requests.get(pi_hole + pi_hole_API_auth + '&topClients='+i).json()
+                    top_clients       = requests.get(pi_hole + pi_hole_API_auth + '&topClients=' + i ).json()
                     top_clients       = top_clients['top_sources']
                     top               = zip(top_domains, top_clients)
-                    head_top_domains  = "Top Permitted Domains:"
-                    head_top_clients  = "Top Clients:"
-                    head_space = " " * (int(numbers_max_space) - int(len(head_top_domains)))
-                    print(bold(border + head_top_domains) + " " + head_space + " " + bold(head_top_clients))
+                    head_top_domains  = " Top Permitted Domains                   "
+                    head_top_clients  = " Top Clients       "
+                    head_space        = " " * (int(numbers_max_space) - int(len(head_top_domains)))
+                    
+                    if  pi_hole_ILoveCandy == "yes":
+                        print(bold(border + blue(head_top_domains)) + head_space + bold(blue(head_top_clients)))
+                    else:
+                        print("\n" + bold(border + head_top_domains + head_space + head_top_clients))
+                        
                     for domain, client in top:
                         ispace = int(ispace) - int(len(domain))
                         real_space    = ispace * " "
-                        print(border + domain, "" + real_space + "" ,client.replace("localhost|127.0.0.1","127.0.0.1"))
+                        
+                        if  pi_hole_ILoveCandy == "yes":
+                            print(border  + " " + text_red(domain) + "" + real_space + text_green(client.replace("localhost|127.0.0.1","127.0.0.1")))
+                        else:
+                            print(border  + " " + domain + "" + real_space + client.replace("localhost|127.0.0.1","127.0.0.1"))
+                        
                         ispace        = numbers_max_space
                     
-                    pi_hole_API_data               = pi_hole + pi_hole_API_auth
-                    API_data_topItems              = requests.get(pi_hole_API_data + "&topItems").json()
+                    pi_hole_API_data  = pi_hole + pi_hole_API_auth
+                    API_data_topItems = requests.get(pi_hole_API_data + "&topItems").json()
                     
                     ### topItems == Top Permitted Domains  ???
                     #print(bold("Top Queries:"))
                     #for x in API_data_topItems['top_queries']:
                     #    print(x)
 
-                    print(bold(border + alert(" Top Advertisers                     " + border + head_space)))
+                    if pi_hole_ILoveCandy == "yes":
+                        print(bold(border + alert(" Top Advertisers                                        " + border)))
+                    else:
+                        print(bold("\n" + border + " Top Advertisers                                        " + border))
+                    
                     i = 0
                     for x in API_data_topItems['top_ads']:
                         y = i
@@ -474,27 +586,35 @@ def main():
                             y = "0" + y
                         else:
                             y = "10"
-                        if i % 2: 
-                            print(border + text_yellow(" [" + y + "] ") + text_blue(x))
+                        if  pi_hole_ILoveCandy == "yes":
+                            if i % 2: 
+                                print(border + text_yellow(" [" + y + "] ") + text_blue(x))
+                            else:
+                                print(border + text_yellow(" [" + y + "] ") + text_cyan(x))
+                            i += 1
                         else:
-                            print(border + text_yellow(" [" + y + "] ") + text_cyan(x))
-                        i += 1
+                            print(border + " [" + y + "] " + x)
                     
                 if not pi_hole_Raw_API_Token == "":
-                    top("10")
-                    
-        print(border_space + bold("Last updated:") + "\t\t",gravity_last_updated_days,"day/s",gravity_last_updated_hours,"hour/s",gravity_last_updated_minutes,"minute/s")
-
+                    top_permitted_domains(str(top_permitted_domains_number))
+                                    
         if len(percent_blocked_str) == 1:
             percent_blocked_space   = "  " 
         else:
-            percent_blocked_space   = " "    
+            percent_blocked_space   = " "
+
         if pi_hole_ILoveCandy       == "yes":
             print(border_space + "\033[44m {}\033[00m" .format("\b " + border_space_bottom + percent_blocked_str + "%" + percent_blocked_space),"\033[43m {}\033[00m" .format("\b\b" + percent_bar_a),"\b\033[42m {}\033[00m" .format("" + percent_bar_b))
+
+
+        if pi_hole_ILoveCandy       == "yes":
+            print(text_grey(border_space + bold(" Last updated:") + "\t\t" + " " + str(gravity_last_updated_days) + text_grey(" day/s ") + str(gravity_last_updated_hours) + text_grey(" hour/s ") + str(gravity_last_updated_minutes) + text_grey(" minute/s")))
+        else:
+            print(border_space + bold(" Last updated:") + "\t\t" + " " + str(gravity_last_updated_days) + " day/s " + str(gravity_last_updated_hours) + " hour/s " + str(gravity_last_updated_minutes) + " minute/s")
         
         if pi_hole_border           == "yes":
             print("")
-
+            
         int(percent_blocked)
         exit()
     else:
