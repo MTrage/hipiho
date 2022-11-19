@@ -8,6 +8,9 @@ HiPiHo allows to query the state of the pi-hole from the terminal, it is also po
 ### Complete output
 ![](https://github.com/MTrage/hipiho/blob/main/screenshots/main-all.png)
 
+### Complete output with API Key
+![](https://github.com/MTrage/hipiho/blob/main/screenshots/main-all-api.png)
+
 ## Installation
 Simply download the script and save it at the desired location °)
 
