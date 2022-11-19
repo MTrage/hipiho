@@ -6,7 +6,7 @@
 #   In jurisdictions that recognize copyright laws, the author or authors of this software dedicate any and all copyright interest in the software to the public domain. We make this dedication for the benefit of the public at large and to the detriment of our heirs and successors. We intend this dedication to be an overt act of relinquishment in perpetuity of all present and future rights to this software under copyright law.
 #   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #   For more information, please refer to <http://unlicense.org>
-
+ 
 # have fun with this one,
 # Marc-André Tragé (github.com/MTrage/hipiho)
 
@@ -23,7 +23,7 @@ top_permitted_domains_number   = 10                 # option for API user – sh
 #  Script parts have been named in such a way that they should be self-explanatory on closer inspection due to their names.
 #  If you still have questions, just ask °)
 
-version                        = "1.5.0"
+version                        = "1.5.1"
 
 ping_ip                        = "8.8.8.8"
 ping_port                      = 53
@@ -493,9 +493,9 @@ def main():
                     print(border_space + " " + "Gateway:\t\t  " + get_gateway_ip())
                 
                 if  pi_hole_ILoveCandy == "yes":
-                    print(border_space + bold(yellow(text_blue(" Extended information provided by the API                   "))))
+                    print(border_space + bold(yellow(text_blue(" Extended information                                       "))))
                 else:
-                    print("\n" + border_space + bold(" Extended information provided by the API "))
+                    print("\n" + border_space + bold(" Extended information"))
 
                 if  pi_hole_ILoveCandy == "yes":
                     print(border_space + bold(text_blue(" Unique Domains            ")) + text_yellow(str(unique_domains))          + bold(text_blue("\t  Reply IP         ")) + text_yellow(str(reply_IP)))
@@ -572,7 +572,7 @@ def main():
                     #print(bold("Top Queries:"))
                     #for x in API_data_topItems['top_queries']:
                     #    print(x)
-
+                   
                     if pi_hole_ILoveCandy == "yes":
                         print(bold(border + alert(" Top Advertisers                                        " + border)))
                     else:
